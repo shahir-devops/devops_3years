@@ -1,0 +1,27 @@
+node{
+    def mavenHome = tool name: 'maven 3.9.13', type: 'maven'
+    def image = "shahir5890/springjenkins"
+    def tag = env.BUILD_NUMBER
+    
+    stage("check_out"){
+        git credentialsId: 'git_user', url: 'https://github.com/shahir-devops/spring-boot-mongo-compose.git'
+    }
+    stage("build"){
+        sh "$mavenHome/bin/mvn clean package"
+    }
+    stage("docker_image"){
+        sh "docker build -t ${image}:${tag} ."
+    }
+    stage("docker_push"){
+        withCredentials([string(credentialsId: 'docker_cred', variable: 'docker_cred')]) {
+            sh "docker login -u shahir5890 -p ${docker_cred}"
+            sh "docker push ${image}:${tag}"
+        }
+    }
+    stage("docker_run"){
+        sh "docker run -d --name mongo --network springapp -v mongovol:/data/db -e MONGO_INITDB_ROOT_USERNAME=sha -e MONGO_INITDB_ROOT_PASSWORD=sha@123 mongo:6"
+        sh "docker run -d --name springapp --network springapp -p 8081:8080 -e MONGO_DB_HOSTNAME=mongo -e MONGO_DB_USERNAME=sha -e MONGO_DB_PASSWORD=sha@123 ${image}:${tag}"
+    }
+}
+
+
