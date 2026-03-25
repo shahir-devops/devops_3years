@@ -4,8 +4,7 @@ pipeline {
         maven 'maven 3.9.13'
     }
     environment {
-        buildNum = "${env.BUILD_NUMBER}"
-        image = "shahir5890/springjenkinsdw"
+        version= "${env.BUILD_NUMBER}"
     }
     stages{
         stage("checkout_git"){
@@ -20,21 +19,21 @@ pipeline {
         }
         stage("docker_build"){
             steps{
-                sh "docker build -t ${image}:${buildNum} ."
+                sh "docker build -t shahir5890/springjenkins:1.0.${version}"
             }
         }
         stage("docker_push"){
             steps{
                 withCredentials([string(credentialsId: 'docker_cred', variable: 'docker_cred')]) {
                 sh "docker login -u shahir5890 -p ${docker_cred}"
-                sh "docker push ${image}:${buildNum}"
+                sh "docker push shahir5890/springjenkins:1.0.${version}"
                 }
             }
         }
         stage("docker_run"){
             steps{
                 sh "docker run -d --name mongoapp --network springapp -v mongodb:/data/db -e MONGO_INITDB_ROOT_USERNAME=sha -e MONGO_INITDB_ROOT_PASSWORD=sha@123 mongo:6"
-                sh "docker run -d --name springappp --network springapp -p 9000:8080 -e MONGO_DB_HOSTNAME=mongoapp -e MONGO_DB_USERNAME=sha -e MONGO_DB_PASSWORD=sha@123 ${image}:${buildNum}"
+                sh "docker run -d --name springappp --network springapp -p 9000:8080 -e MONGO_DB_HOSTNAME=mongoapp -e MONGO_DB_USERNAME=sha -e MONGO_DB_PASSWORD=sha@123 shahir5890/springjenkins:1.0.${version}"
             }
         }
     }

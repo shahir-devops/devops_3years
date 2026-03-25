@@ -12,12 +12,12 @@ node{
         sh "$mavenHome/bin/mvn clean package"
     }
     stage("docker_image"){
-        sh "docker build -t shahir5890/springjenkins:latest ."
+        sh "docker build -t shahir5890/springjenkins:${version} ."
     }
     stage("docker_push"){
         withCredentials([string(credentialsId: 'docker_cred', variable: 'docker_cred')]) {
             sh "docker login -u shahir5890 -p ${docker_cred}"
-            sh "docker push shahir5890/springjenkins:${tag}"
+            sh "docker push shahir5890/springjenkins:${version}"
         }
     }
     stage("k8s_deploy"){

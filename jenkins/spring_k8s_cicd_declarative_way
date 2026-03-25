@@ -4,17 +4,12 @@ pipeline {
         maven 'maven 3.9.13'
     }
     environment {
-        buildNum = "${env.BUILD_NUMBER}"
+        version = "${env.BUILD_NUMBER}"
     }
     stages{
         stage("checkout_git"){
             steps{
             git credentialsId: 'git_user', url: 'https://github.com/shahir-devops/spring-boot-mongo-compose.git'
-            }
-        }
-        stage("replace_sed"){
-            steps{
-                sh "sed -i 's/tag/${tag}/g' springbootjenkins.yml"
             }
         }
         stage("build"){
@@ -24,14 +19,14 @@ pipeline {
         }
         stage("docker_build"){
             steps{
-                sh "docker build -t shahir5890/springjenkinsdw:${buildNum} ."
+                sh "docker build -t shahir5890/springjenkinsdw:1.0.${version} ."
             }
         }
         stage("docker_push"){
             steps{
                 withCredentials([string(credentialsId: 'docker_cred', variable: 'docker_cred')]) {
                 sh "docker login -u shahir5890 -p ${docker_cred}"
-                sh "docker push shahir5890/springjenkinsdw:${buildNum}"
+                sh "docker push shahir5890/springjenkinsdw:1.0.${version}
                 }
             }
         }
