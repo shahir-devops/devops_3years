@@ -1,18 +1,18 @@
 node{
     def mavenHome = tool name: 'maven 3.9.13', type: 'maven'
-    def tag = env.BUILD_NUMBER
+    def version = env.BUILD_NUMBER
     
     stage("check_git_out"){
         git credentialsId: 'git_user', url: 'https://github.com/shahir-devops/spring-boot-mongo-compose.git'
     }
     stage("replace tag"){
-        sh "sed -i 's/tag/${tag}/g' springbootjenkins.yml"
+        sh "sed -i 's/tag/${version}/g' springbootjenkins.yml"
     }
     stage("build"){
         sh "$mavenHome/bin/mvn clean package"
     }
     stage("docker_image"){
-        sh "docker build -t shahir5890/springjenkins:${tag} ."
+        sh "docker build -t shahir5890/springjenkins:latest ."
     }
     stage("docker_push"){
         withCredentials([string(credentialsId: 'docker_cred', variable: 'docker_cred')]) {
