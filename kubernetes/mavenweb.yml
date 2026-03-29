@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mavenweb
+  namespace: test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      dev: maven
+  template:
+    metadata:
+      labels:
+        dev: maven
+    spec:
+      containers:
+      - name: mavenweb
+        image: shahir5890/mavendocker:6
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 112m
+            memory: 112Mi
+          limits:
+            cpu: 256m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /maven-web-application
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /maven-web-application
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mavensvc
+  namespace: test
+spec:
+  type: ClusterIP
+  selector:
+    dev: maven
+  ports:
+  - port: 80
+    targetPort: 8080

@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: javaweb
+  namespace: test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      dev: java
+  template:
+    metadata:
+      labels:
+        dev: java
+    spec:
+      containers:
+      - name: javaweb
+        image: shahir5890/java_build:3
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 112m
+            memory: 112Mi
+          limits:
+            cpu: 256m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /java-web-app
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /java-web-app
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: javasvc
+  namespace: test
+spec:
+  type: ClusterIP
+  selector:
+    dev: java
+  ports:
+  - port: 80
+    targetPort: 8080

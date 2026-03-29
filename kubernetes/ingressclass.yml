@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shahirdevops
+  namespace: test
+spec:
+  rules:
+  - host: "shahirdevops.com"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: springsvc
+            port:
+              number: 80
+      - pathType: Prefix
+        path: "/maven-web-application"
+        backend:
+          service:
+            name: mavensvc
+            port:
+              number: 80
+      - pathType: Prefix
+        path: "/java-web-app"
+        backend:
+          service:
+            name: javasvc
+            port:
+              number: 80
