@@ -1,0 +1,28 @@
+node{
+    def mavenHome = tool name : "maven 3.9.13"
+    def version = env.BUILD_NUMBER
+    stage("checkoutgit"){
+        git credentialsId: 'git_user', url: 'https://github.com/shahir-devops/maven-web-application.git'
+    }
+    stage("version_replace"){
+        sh "sed -i 's/version/${version}/g' mavenweblb.yml"
+    }
+    stage("Build"){
+        sh "$mavenHome/bin/mvn clean package"
+    }
+    stage("docker build"){
+        sh "docker build -t shahir5890/mavendocker:1.2.${version} ."
+    }
+    stage("docker push"){
+        withCredentials([usernamePassword(
+            credentialsId: 'docker_cred', 
+            passwordVariable: 'docker_pass', 
+            usernameVariable: 'docker_user')]) {
+                sh "echo ${docker_pass} | docker login -u ${docker_user} --password-stdin"
+                sh "docker push shahir5890/mavendocker:1.2.${version}"
+        }
+    }
+    stage("k8s_run"){
+        sh "kubectl apply -f mavenweblb.yml"
+    }
+}
