@@ -23,10 +23,35 @@ kubectl edit deployment mavenwebapp -n prod
 ## for helm 
 helm upgrade my-release my-chart --set image.tag=2.1.0
 
-livenessProbe: check the container if it fails , it restart the container (restart if container struck)
-readinessProbe: check if the container is ready to accept the traffic, if fails k8s removes from the service endpoints(k8s cluster) -> (control service routing)
+## livenessProbe: 
+check the container if it fails , it restart the container (restart if container struck)
 
-readinessProbe -> livenesprobe
+## readinessProbe: 
+check if the container is ready to accept the traffic, if fails k8s removes from the service endpoints(k8s cluster) -> (control service routing)
+
+readinessProbe -> startupProbe -> livenesprobe
+
+## startupProbe
+a startupProbe checks whether the application has successfully started
+it is used to prevent livenessProbe from killing slow starting apps, gives the app enough time to initialize (like load db, config )
+
+## Troubleshoot application
+
+-> kubectl get pods -n prod
+-> kubectl describe pod <podname> -n prod -> check events, (livessprobe, readinessprobe) connection refused, backoff restarting container failure
+-> kubectl logs <podname> -n prod -->App crash, port mismatch, endpoint not available
+-> kubectl exec -it <podname> -n prod -- /bin/sh -> manually check inside the pod
+    curl localhost:8080/health
+
+
+## 
+## problem                                    cause                               solution
+
+App restarting repeating -> livenesswrong, less initialdelayseconds,  -> increase initialsec, give correct path
+pod not ready -> readiness failing, server not available -> fix end points or path, restart node or kubectl
+connection refused -> wrong port, already allocated -> match containerport, change (nodeport, Loadbalancer)
+404 error -> wrong path -> change the path
+
 ## how canary deployment works 
 old version on one server, new version on another server
 
