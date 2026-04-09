@@ -67,7 +67,9 @@ by default kubenetes doesnt deploy based on servers, it deploys based on labels 
 kubectl label node <nodeIP> env=canary
 kubectl label node <nodeIP> env=stable
 
-ex: nodeSelctor:
+ex: 
+
+    nodeSelctor:
 
       env=stable
 
@@ -82,19 +84,23 @@ green works -> traffic to blue ->X failed blue <-- rollback
 
 ex:
 
-node1:    selector:
+node1:    
+
+        selector:
 
             matchLabels: 
 
               version: blue
     
-node2:    selector:
+node2:  
+          selector:
 
             matchLabels:
 
                version: green
 
-service:  selector:  #route the traffic
+service:
+          selector:  #route the traffic
 
             version: blue
 
