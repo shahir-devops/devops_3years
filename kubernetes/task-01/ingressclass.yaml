@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: production
+  namespace: prod
+spec:
+  rules:
+  - host: shahirdevops.com
+    http:
+      paths:
+      - path: /maven-web-application
+        pathType: Prefix
+        backend:
+          service:
+            name: mavensvc
+            port:
+              number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nodesvc
+            port:
+              number: 9981

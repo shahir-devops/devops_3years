@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: ConfigMap
+metadata:
+  name: mongoconfig
+data:
+  mongodb_username = "sha"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongosec
+type: Opaque
+stringData:
+  mongopassword: 
+
