@@ -93,16 +93,18 @@ node1:
               version: blue
     
 node2:  
-          selector:
 
-            matchLabels:
+        selector:
 
-               version: green
+          matchLabels:
+
+             version: green
 
 service:
-          selector:  #route the traffic
 
-            version: blue
+        selector:  #route the traffic
+
+          version: blue
 
 ## error:
 
