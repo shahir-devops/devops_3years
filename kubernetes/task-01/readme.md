@@ -17,8 +17,10 @@ kubectl annotate deployment mavenwebapp kubernetes.io/change-cause="update image
 
 ## another method 
 kubectl edit deployment mavenwebapp -n prod
+
   -> change image tag to 2.1.0 
-## zero deployment, trigger rolling update
+
+zero deployment, trigger rolling update
 
 ## for helm 
 helm upgrade my-release my-chart --set image.tag=2.1.0
@@ -33,23 +35,28 @@ readinessProbe -> startupProbe -> livenesprobe
 
 ## startupProbe
 a startupProbe checks whether the application has successfully started
+
 it is used to prevent livenessProbe from killing slow starting apps, gives the app enough time to initialize (like load db, config )
 
 ## Troubleshoot application
 
 -> kubectl get pods -n prod
+
 -> kubectl describe pod <podname> -n prod -> check events, (livessprobe, readinessprobe) connection refused, backoff restarting container failure
+
 -> kubectl logs <podname> -n prod -->App crash, port mismatch, endpoint not available
+
 -> kubectl exec -it <podname> -n prod -- /bin/sh -> manually check inside the pod
     curl localhost:8080/health
-
-
-## 
+ 
 ## problem                                    cause                               solution
 
 App restarting repeating -> livenesswrong, less initialdelayseconds,  -> increase initialsec, give correct path
+
 pod not ready -> readiness failing, server not available -> fix end points or path, restart node or kubectl
+
 connection refused -> wrong port, already allocated -> match containerport, change (nodeport, Loadbalancer)
+
 404 error -> wrong path -> change the path
 
 ## how canary deployment works 
@@ -61,8 +68,11 @@ kubectl label node <nodeIP> env=canary
 kubectl label node <nodeIP> env=stable
 
 ex: nodeSelctor:
+
       env=stable
+
     containers:
+
     - name: 
 
 ## Blue-green deployment
@@ -71,23 +81,31 @@ we maintain two identical environment, one new verison is deployed to green, and
 green works -> traffic to blue ->X failed blue <-- rollback
 
 ex:
+
 node1:    selector:
+
             matchLabels: 
+
               version: blue
     
 node2:    selector:
+
             matchLabels:
+
                version: green
 
 service:  selector:  #route the traffic
+
             version: blue
 
 ## error:
 
 ImagePullBackOff: incorrect image tag, Repo permission
+
 sol: kubectl describe pod <pod> check events & ImagePull errors
 
 OOMkilled: out of memory -> increase memory, 
+
 sol: kubectl top pod <pod-name>
      kubectl scale deployment <name> --replicas=3
      
