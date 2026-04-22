@@ -1,0 +1,119 @@
+## Redis Deployment (Production Grade)
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
+helm install redis bitnami/redis \
+  --namespace cache \
+  --create-namespace \
+  --set architecture=replication \
+  --set auth.enabled=true \
+  --set auth.password=StrongPassword123 \
+  --set master.persistence.enabled=true \
+  --set replica.replicaCount=2 \
+  --set replica.persistence.enabled=true
+
+
+  ## vi values.yml
+
+  service:
+  type: ClusterIP
+
+  ##  helm upgrade redis bitnami/redis -f values.yml -n cache
+
+  ## vi pom.xml
+
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-cache</artifactId>
+</dependency>
+
+## src/application.yml
+
+spring:
+  data:
+    mongodb:
+      host: ${MONGO_DB_HOSTNAME}
+      port: 27017
+      username: ${MONGO_DB_USERNAME}
+      password: ${MONGO_DB_PASSWORD}
+      database: users
+      authentication-database: admin
+
+  redis:
+    host: redis-master.cache.svc.cluster.local
+    port: 6379
+    password: ${REDIS_PASSWORD}
+    timeout: 6000
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000   # 10 minutes
+
+## kubectl create secret generic redis-secret --from-literal=password=StrongPassword123 -n prod
+
+
+## vi spring.yaml 
+
+env:
+  - name: REDIS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: redis-secret
+        key: password
+
+## vi Demoapp.java(main file)
+
+import org.springframework.cache.annotation.EnableCaching;
+
+@EnableCaching   // 👈 ADD HERE
+@SpringBootApplication
+public class SpringappApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringappApplication.class, args);
+    }
+}
+
+## userService.yaml
+
+@Cacheable(value = "users", key = "#id")
+public User getUserById(String id) {
+    return userRepository.findById(id);
+}
+
+
+
+## Testing
+
+Kubectl exec -it redis-master-0 -n cache
+
+AUTH StrongPassword123 -> OK
+
+SET key1 "hello"
+
+GET key1
+
+PING -> PONG
+
+## db
+
+kubectl exec -it mongo-0 -n prod -- mongosh
+
+use users 
+
+users > db.users.find()
+
+
+curl http://localhost:8080/PI/USERS/<id>
+
+-> FIRST DB HIT 
+-> SECONDS NO DB HIT
+
+INFO STATS

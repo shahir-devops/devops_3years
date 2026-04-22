@@ -102,3 +102,4 @@ resource "aws_security_group" "asg" {
     name = "sec_grp"
   }
 }
+
